@@ -95,4 +95,12 @@ export class IndexerService {
     this.logger.debug('Data fetched');
     await this.tokenRepository.save(entites);
   }
+
+  async genLatestTokens(): Promise<Array<TokenEntity>> {
+    const queries: Array<TokenEntity> = await this.tokenRepository.query(
+      'SELECT * FROM token GROUP BY symbol ORDER BY id DESC LIMIT 20',
+    );
+
+    return queries;
+  }
 }
