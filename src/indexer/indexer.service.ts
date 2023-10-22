@@ -98,7 +98,7 @@ export class IndexerService {
 
   async genLatestTokens(): Promise<Array<TokenEntity>> {
     const queries: Array<TokenEntity> = await this.tokenRepository.query(
-      'SELECT * FROM token GROUP BY symbol ORDER BY date LIMIT 20',
+      'SELECT * FROM token ORDER BY id DESC LIMIT 20',
     );
 
     return queries;
