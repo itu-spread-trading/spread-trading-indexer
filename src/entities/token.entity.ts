@@ -18,13 +18,13 @@ export class TokenEntity {
   best_bid_price: string;
 
   @Column()
-  best_bid_qty: string;
-
-  @Column()
   best_ask_price: string;
 
   @Column()
-  best_ask_qty: string;
+  futures_best_bid_price: string;
+
+  @Column()
+  futures_best_ask_price: string;
 
   @Column({
     type: 'timestamp',

@@ -50,9 +50,20 @@ export class IndexerService {
       });
     });
 
+    const futuresBestAskAndBidRequests = TOKENPAIRS.map((symbol) => {
+      return this.spotAxios.get('/depth', {
+        params: {
+          symbol,
+        },
+      });
+    });
+
     const spotPriceResponses = await Promise.all(spotPriceRequests);
     const futuresPriceResponses = await Promise.all(futurePriceRequests);
     const bestAskAndBidResponses = await Promise.all(bestAskAndBidRequests);
+    const futuresBestAskAndBidResponses = await Promise.all(
+      futuresBestAskAndBidRequests,
+    );
 
     if (spotPriceResponses.length !== 20) {
       this.logger.debug('spotPriceResponses.length !== 20');
@@ -72,24 +83,28 @@ export class IndexerService {
     const entites = spotPriceRequests.map((_, index) => {
       const bestBid = bestAskAndBidResponses[index].data.bids[0];
       const bestAsk = bestAskAndBidResponses[index].data.asks[0];
+      const futuresBestBid = futuresBestAskAndBidResponses[index].data.bids[0];
+      const futuresBestAsk = futuresBestAskAndBidResponses[index].data.asks[0];
+
       const spotPricesResponseData = spotPriceResponses[index].data;
       const futuresPriceResponseData = futuresPriceResponses[index].data;
 
       const spotPrice = spotPricesResponseData.price;
       const futuresPrice = futuresPriceResponseData.price;
       const bestAskPrice = bestAsk[0];
-      const bestAskQty = bestAsk[1];
       const bestBidPrice = bestBid[0];
-      const bestBidQty = bestBid[1];
+
+      const futuresBestAskPrice = futuresBestAsk[0];
+      const futuresBestBidPrice = futuresBestBid[0];
 
       return this.tokenRepository.create({
         symbol: TOKENPAIRS[index],
         spot_price: spotPrice,
         futures_price: futuresPrice,
         best_ask_price: bestAskPrice,
-        best_ask_qty: bestAskQty,
         best_bid_price: bestBidPrice,
-        best_bid_qty: bestBidQty,
+        futures_best_ask_price: futuresBestAskPrice,
+        futures_best_bid_price: futuresBestBidPrice,
       });
     });
     this.logger.debug('Data fetched');
