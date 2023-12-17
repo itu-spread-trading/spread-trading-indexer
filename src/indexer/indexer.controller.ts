@@ -1,11 +1,15 @@
-import { Controller, Get, Logger } from '@nestjs/common';
+import { Controller, Get, Logger, OnModuleInit } from '@nestjs/common';
 import { TokenEntity } from 'src/entities/token.entity';
 import { IndexerService } from 'src/indexer/indexer.service';
 
 @Controller('indexer')
-export class IndexerController {
+export class IndexerController implements OnModuleInit {
   constructor(private readonly indexerService: IndexerService) {}
   logger = new Logger(IndexerController.name);
+
+  onModuleInit() {
+    this.indexerService.genIndex();
+  }
 
   /**
    * @description Generate index of token list

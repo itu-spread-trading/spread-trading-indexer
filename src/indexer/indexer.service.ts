@@ -51,7 +51,7 @@ export class IndexerService {
     });
 
     const futuresBestAskAndBidRequests = TOKENPAIRS.map((symbol) => {
-      return this.spotAxios.get('/depth', {
+      return this.futuresAxios.get('/depth', {
         params: {
           symbol,
         },
