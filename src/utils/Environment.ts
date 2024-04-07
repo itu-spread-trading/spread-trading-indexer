@@ -27,4 +27,9 @@ export class Environment {
    * @description App Port
    */
   public static readonly DB_USER: string = process.env.DB_USER;
+
+  /**
+   * @description App Environment - dev, prod
+   */
+  public static readonly ENV: string = process.env.ENV;
 }

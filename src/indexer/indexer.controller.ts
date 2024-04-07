@@ -1,21 +1,23 @@
-import { Controller, Get, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Logger,
+  OnApplicationBootstrap,
+} from '@nestjs/common';
 import { TokenEntity } from 'src/entities/token.entity';
 import { IndexerService } from 'src/indexer/indexer.service';
+import { Environment } from 'src/utils/Environment';
 
 @Controller('indexer')
-export class IndexerController implements OnModuleInit {
+export class IndexerController implements OnApplicationBootstrap {
   constructor(private readonly indexerService: IndexerService) {}
   logger = new Logger(IndexerController.name);
 
-  onModuleInit() {
+  onApplicationBootstrap() {
+    if (Environment.ENV === 'dev') {
+      return;
+    }
     this.indexerService.genIndex();
-  }
-
-  /**
-   * @description Generate index of token list
-   */
-  genIndex(): Promise<void> {
-    return this.indexerService.genIndex();
   }
 
   /**
