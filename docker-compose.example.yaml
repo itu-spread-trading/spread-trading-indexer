@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   api:
-    image: asgarovfarhad/spread-trading-indexer:1.0.0
+    image: asgarovfarhad/spread-trading-indexer:1.0.1
     container_name: spread-trading-indexer
     build: ./
     ports:
