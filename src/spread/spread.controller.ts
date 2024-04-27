@@ -11,7 +11,7 @@ export class SpreadController {
    * @description Get spread on given time interval
    * @param query {SpreadQueryParams} Query parameters for getting spread
    */
-  @Get('spread')
+  @Get()
   genSpread(@Query() query: SpreadQueryParams): Promise<void> {
     return this.spreadService.genSpread(query);
   }
