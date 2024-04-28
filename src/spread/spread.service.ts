@@ -4,6 +4,7 @@ import { TokenEntity } from 'src/entities/token.entity';
 import {
   SpreadCandleResponse,
   SpreadGraphQueryParams,
+  SpreadMeanResponse,
   SpreadQueryParams,
   SpreadResponse,
 } from 'src/spread/spread.dto';
@@ -18,36 +19,33 @@ export class SpreadService {
     private tokenRepository: Repository<TokenEntity>,
   ) {}
 
+  async genMeanGraphData(
+    query: SpreadGraphQueryParams,
+  ): Promise<Array<SpreadMeanResponse>> {
+    const groups = await this.genSpreadGroups(query);
+
+    const flatten = groups.flat();
+    const spreads = flatten.map((token) =>
+      this.getSpreadFromTokenEntity(token),
+    );
+
+    let count = 1;
+    const graphData = spreads.map(() => {
+      const mean = spreads.slice(0, count).reduce((a, b) => a + b) / count;
+      count++;
+      return {
+        value: mean,
+        date: flatten[count - 1]?.date ?? new Date(),
+      };
+    });
+
+    return graphData;
+  }
+
   async genSpreadGraphData(
     query: SpreadGraphQueryParams,
   ): Promise<Array<SpreadCandleResponse>> {
-    const currentDate = new Date();
-    const threeWeeksBefore = new Date(
-      currentDate.setDate(currentDate.getDate() - 22),
-    );
-
-    const allData = await this.tokenRepository.find({
-      where: {
-        symbol: query.symbol,
-        date: MoreThanOrEqual(threeWeeksBefore),
-      },
-    });
-
-    let intervalSize = 12;
-    if (query.interval === '1h') {
-      intervalSize = 12;
-    } else if (query.interval === '4h') {
-      intervalSize = 12 * 4;
-    } else if (query.interval === '1d') {
-      intervalSize = 12 * 24;
-    }
-
-    const groups: Array<Array<TokenEntity>> = [];
-
-    for (let i = 0; i < allData.length; i += intervalSize) {
-      const group = allData.slice(i, i + intervalSize);
-      groups.push(group);
-    }
+    const groups = await this.genSpreadGroups(query);
 
     const graphData: Array<SpreadCandleResponse> = groups.map((group) => {
       const spreads = group.map((token) =>
@@ -66,24 +64,85 @@ export class SpreadService {
   }
 
   async genSpread(query: SpreadQueryParams): Promise<SpreadResponse> {
-    const { symbol, from } = query;
+    const { symbol } = query;
 
     const findOptionsWhere: FindOptionsWhere<TokenEntity> = {
       symbol: symbol,
     };
 
-    if (from != null) {
-      findOptionsWhere.date = new Date(from);
-    }
-
     const token = await this.tokenRepository.findOne({
       where: findOptionsWhere,
+      order: { date: 'DESC' },
     });
+
     const spread = this.getSpreadFromTokenEntity(token);
     return {
       spread: spread,
       date: token.date,
     };
+  }
+
+  async genBffData(query: SpreadQueryParams): Promise<void> {
+    const { symbol } = query;
+
+    const findOptionsWhere: FindOptionsWhere<TokenEntity> = {
+      symbol: symbol,
+    };
+
+    const mean = await this.tokenRepository
+      .createQueryBuilder('token')
+      .select(
+        'AVG(LOG(token.futures_best_bid_price / token.best_bid_price))',
+        'mean',
+      )
+      .where(findOptionsWhere)
+      .getRawOne();
+
+    console.log(mean);
+  }
+
+  private async genSpreadGroups(
+    query: SpreadGraphQueryParams,
+  ): Promise<Array<Array<TokenEntity>>> {
+    const range = query.range ?? '1m';
+    const date = new Date();
+    if (range === '1d') {
+      date.setDate(date.getDate() - 1);
+    } else if (range === '1w') {
+      date.setDate(date.getDate() - 7);
+    } else if (range === '1m') {
+      date.setMonth(date.getMonth() - 1);
+    } else if (range === '3m') {
+      date.setMonth(date.getMonth() - 3);
+    } else if (range === '6m') {
+      date.setMonth(date.getMonth() - 6);
+    }
+
+    const allData = await this.tokenRepository.find({
+      where: {
+        symbol: query.symbol,
+        date: MoreThanOrEqual(date),
+      },
+    });
+
+    let intervalSize = 12;
+    if (query.interval === '1h') {
+      intervalSize = 12;
+    } else if (query.interval === '4h') {
+      intervalSize = 12 * 4;
+    } else if (query.interval === '1d') {
+      intervalSize = 12 * 24;
+    } else if (query.interval === '5m') {
+      intervalSize = 1;
+    }
+
+    const groups: Array<Array<TokenEntity>> = [];
+
+    for (let i = 0; i < allData.length; i += intervalSize) {
+      const group = allData.slice(i, i + intervalSize);
+      groups.push(group);
+    }
+    return groups;
   }
 
   private getSpreadFromTokenEntity(token: TokenEntity): number {

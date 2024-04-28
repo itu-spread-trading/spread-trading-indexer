@@ -2,6 +2,7 @@ import { Controller, Get, Logger, Query } from '@nestjs/common';
 import {
   SpreadCandleResponse,
   SpreadGraphQueryParams,
+  SpreadMeanResponse,
   SpreadQueryParams,
   SpreadResponse,
 } from 'src/spread/spread.dto';
@@ -21,6 +22,11 @@ export class SpreadController {
     return this.spreadService.genSpread(query);
   }
 
+  @Get('bff')
+  genBffData(@Query() query: SpreadQueryParams): Promise<void> {
+    return this.spreadService.genBffData(query);
+  }
+
   /**
    * @description Get graph for spread on given time interval
    * @param query Query parameters for getting spread graph
@@ -30,5 +36,16 @@ export class SpreadController {
     @Query() query: SpreadGraphQueryParams,
   ): Promise<Array<SpreadCandleResponse>> {
     return this.spreadService.genSpreadGraphData(query);
+  }
+
+  /**
+   * @description Get graph for spread mean on given time interval
+   * @param query Query parameters for getting spread graph
+   */
+  @Get('graph/mean')
+  genMeanGraph(
+    @Query() query: SpreadGraphQueryParams,
+  ): Promise<Array<SpreadMeanResponse>> {
+    return this.spreadService.genMeanGraphData(query);
   }
 }
