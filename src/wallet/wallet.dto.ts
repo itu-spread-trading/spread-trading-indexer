@@ -12,9 +12,26 @@ export class WalletCreateDto {
 export class WalletLoginDto {
   @IsString()
   signature: string;
+
+  @IsString()
+  address: string;
+}
+
+export class WalletGetDto {
+  @IsString()
+  signature: string;
 }
 
 export class WalletCreateResponse {
   wallet: WalletEntity;
   accessToken: string;
+}
+
+export class WalletLoginResponse {
+  wallet: WalletEntity;
+  accessToken: string;
+}
+
+export class IsRegisteredResponse {
+  isRegistered: boolean;
 }

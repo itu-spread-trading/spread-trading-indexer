@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CONFIG } from 'src/config';
 import { IndexerModule } from 'src/indexer/indexer.module';
 import { SpreadModule } from 'src/spread/spread.module';
+import { WalletModule } from 'src/wallet/wallet.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { SpreadModule } from 'src/spread/spread.module';
     // Custom Modules
     IndexerModule,
     SpreadModule,
+    WalletModule,
   ],
   controllers: [],
   providers: [],

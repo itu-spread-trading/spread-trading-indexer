@@ -13,7 +13,13 @@ import {
   verifyLoginMessage,
   verifyRegistrationMessage,
 } from 'src/utils';
-import { WalletCreateDto, WalletCreateResponse } from 'src/wallet/wallet.dto';
+import {
+  IsRegisteredResponse,
+  WalletCreateDto,
+  WalletCreateResponse,
+  WalletLoginDto,
+  WalletLoginResponse,
+} from 'src/wallet/wallet.dto';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -59,6 +65,37 @@ export class WalletService {
     return wallet;
   }
 
+  async genLoginWallet(dto: WalletLoginDto): Promise<WalletLoginResponse> {
+    const { address, signature } = dto;
+
+    const verifiedAddress = verifyLoginMessage(signature);
+    const lowerCaseAddress = address.toLowerCase();
+
+    if (verifiedAddress != lowerCaseAddress) {
+      throw new ForbiddenException('Invalid signature');
+    }
+
+    const wallet = await this.walletRepository.findOne({
+      where: {
+        address: lowerCaseAddress,
+      },
+    });
+
+    if (!wallet) {
+      throw new NotFoundException('Wallet not found');
+    }
+
+    const accessToken = this.jwtService.sign({
+      address: lowerCaseAddress,
+      privateKey: wallet.associatedPrivateKey,
+    });
+
+    return {
+      wallet,
+      accessToken,
+    };
+  }
+
   async genCreateWallet(dto: WalletCreateDto): Promise<WalletCreateResponse> {
     const { address, signature } = dto;
 
@@ -85,6 +122,18 @@ export class WalletService {
     return {
       wallet: createdWallet,
       accessToken: accessToken,
+    };
+  }
+
+  async genIsRegistered(address: string): Promise<IsRegisteredResponse> {
+    const wallet = await this.walletRepository.findOne({
+      where: {
+        address: address,
+      },
+    });
+
+    return {
+      isRegistered: wallet != null,
     };
   }
 }
