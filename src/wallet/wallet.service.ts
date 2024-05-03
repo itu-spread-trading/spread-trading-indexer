@@ -87,6 +87,7 @@ export class WalletService {
 
     const accessToken = this.jwtService.sign({
       address: lowerCaseAddress,
+      associatedAddress: wallet.associatedAddress,
       privateKey: wallet.associatedPrivateKey,
     });
 
