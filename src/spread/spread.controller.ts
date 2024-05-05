@@ -5,6 +5,7 @@ import {
   SpreadMeanResponse,
   SpreadQueryParams,
   SpreadResponse,
+  SpreadStandardDeviationResponse,
 } from 'src/spread/spread.dto';
 import { SpreadService } from 'src/spread/spread.service';
 
@@ -36,6 +37,17 @@ export class SpreadController {
     @Query() query: SpreadGraphQueryParams,
   ): Promise<Array<SpreadCandleResponse>> {
     return this.spreadService.genSpreadGraphData(query);
+  }
+
+  /**
+   * @description Get standard deviation for spread on given time interval
+   * @param query Query parameters for getting spread graph
+   */
+  @Get('sd')
+  genStandardDeviation(
+    @Query() query: SpreadGraphQueryParams,
+  ): Promise<SpreadStandardDeviationResponse> {
+    return this.spreadService.genStandardDeviation(query);
   }
 
   /**

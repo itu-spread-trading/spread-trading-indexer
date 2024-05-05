@@ -7,6 +7,7 @@ import {
   SpreadMeanResponse,
   SpreadQueryParams,
   SpreadResponse,
+  SpreadStandardDeviationResponse,
 } from 'src/spread/spread.dto';
 import { FindOptionsWhere, MoreThanOrEqual, Repository } from 'typeorm';
 
@@ -40,6 +41,25 @@ export class SpreadService {
     });
 
     return graphData;
+  }
+
+  async genStandardDeviation(
+    query: SpreadGraphQueryParams,
+  ): Promise<SpreadStandardDeviationResponse> {
+    const groups = await this.genSpreadGroups(query);
+    const flatten = groups.flat();
+    const spreads = flatten.map((token) =>
+      this.getSpreadFromTokenEntity(token),
+    );
+    const count = spreads.length;
+    const mean = spreads.reduce((a, b) => a + b) / count;
+
+    const sd = Math.sqrt(
+      spreads.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) /
+        (count - 1),
+    );
+
+    return { value: sd };
   }
 
   async genSpreadGraphData(

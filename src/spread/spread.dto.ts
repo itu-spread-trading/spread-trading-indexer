@@ -38,6 +38,13 @@ export class SpreadResponse {
   date: Date;
 }
 
+export class SpreadStandardDeviationResponse {
+  /**
+   * Standard deviation of spread between futures and spot
+   */
+  value: number;
+}
+
 export class SpreadBffResponse {
   /**
    * Spread between futures and spot
