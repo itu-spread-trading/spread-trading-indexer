@@ -1,3 +1,4 @@
+import { OrderEntity } from 'src/entities/order.entity';
 import { TokenEntity } from 'src/entities/token.entity';
 import { WalletEntity } from 'src/entities/wallet.entity';
 import { Environment } from 'src/utils/Environment';
@@ -15,7 +16,7 @@ export const CONFIG: ConfigType = {
     username: Environment.DB_USER,
     password: Environment.DB_PASSWORD,
     database: Environment.DB_NAME,
-    entities: [TokenEntity, WalletEntity],
+    entities: [TokenEntity, WalletEntity, OrderEntity],
     synchronize: true,
   },
 };
